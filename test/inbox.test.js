@@ -8,14 +8,13 @@ const ganache = require('ganache-cli');
 //This is ETH test network for contract deployment.
 const Web3 = require('web3');
 const provider = ganache.provider();
-const web3 = new Web3(provider());
+const web3 = new Web3(provider);
 
 const { interface, bytecode } = require('../compile')
 //web3 allows for ethereum programming within the network
 
 let accounts;
 let inbox;
-const INITIAL_STRING = 'Hi there!'
 
 beforeEach(async () => {
     //Get a list of all accounts
@@ -23,8 +22,12 @@ beforeEach(async () => {
 
     // Use one of those accounts to deploy the contracts
     inbox = await new web3.eth.Contract(JSON.parse(interface))
-        .deploy({ data: bytecode, arguments: [INITIAL_STRING] })
+        .deploy({
+            data: bytecode,
+            arguments: ['Hi there!']
+        })
         .send({ from: accounts[0], gas: '1000000' });
+    inbox.setProvider(provider);
 });
 
 describe('Inbox', () => {
@@ -34,7 +37,6 @@ describe('Inbox', () => {
 
     it('has a default message', async () => {
         const message = await inbox.methods.message().call();
-        assert.equal(messsage, INITIAL_STRING);
+        assert.equal(message, 'Hi there!');
     });
-
 });
